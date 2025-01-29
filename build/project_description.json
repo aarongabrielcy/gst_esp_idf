@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "gst_esp_idf",
-    "project_version":    "834b96d-dirty",
+    "project_version":    "e7f6d4a-dirty",
     "project_path":       "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf",
     "idf_path":           "C:/Users/aaron/esp/v5.4/esp-idf",
     "build_dir":          "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build",
@@ -1451,7 +1451,7 @@
             "managed_priv_reqs": [],
             "file": "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/services/libservices.a",
             "sources": [ "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/services/tcp.cpp" ],
-            "include_dirs": [ "include" ]
+            "include_dirs": [ "include", "../../config" ]
         },
         "sim7600": {
             "alias": "idf::sim7600",
@@ -1460,7 +1460,7 @@
             "dir": "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/sim7600",
             "type": "LIBRARY",
             "lib": "__idf_sim7600",
-            "reqs": [ "driver" ],
+            "reqs": [ "driver", "esp_timer" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
@@ -2983,7 +2983,7 @@
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
-            "include_dirs": [ "include" ]
+            "include_dirs": [ "include", "../../config" ]
         },
         "sim7600": {
             "alias": "idf::sim7600",
@@ -2991,7 +2991,7 @@
             "prefix": "idf",
             "dir": "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/sim7600",
             "lib": "__idf_sim7600",
-            "reqs": [ "driver" ],
+            "reqs": [ "driver", "esp_timer" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],

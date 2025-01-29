@@ -4,6 +4,8 @@
 #include "SIM7600.h"
 #include <string> 
 #include "esp_log.h"
+#include "system_config.h"
+
 class tcp {
 
 private:

@@ -30,7 +30,6 @@ extern "C" void app_main() {
     GPS.confiGpsReports(1);
 
 
-
     // Tarea para leer comandos del monitor serial
     char input[256];
 
@@ -44,12 +43,8 @@ extern "C" void app_main() {
             input[strcspn(input, "\n")] = 0;
 
             // Enviar el comando AT al módulo
-            simModule.sendATCommand(input);
-
-            // Leer y mostrar la respuesta
-            printf("Esperando respuesta...\n");
-            std::string response = simModule.readResponse();
-            printf("Response: %s\n", response.c_str());
+            std::string response = simModule.sendCommandWithResponse(input, SYSTEM_INIT_DELAY_MS);
+            ESP_LOGI("MAIN", "Respuesta AT: %s", response.c_str());
         }
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_TASK_DELAY_MS)); // Espera para evitar saturar la CPU

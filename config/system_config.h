@@ -3,7 +3,7 @@
 
 // Configuración de tiempos
 #define SYSTEM_TASK_DELAY_MS 500
-#define SYSTEM_INIT_DELAY_MS 1000
+#define SYSTEM_INIT_DELAY_MS 3000
 
 // Configuración de red
 #define DEFAULT_APN "internet.itelcel.com"
