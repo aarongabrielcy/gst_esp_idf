@@ -6,8 +6,8 @@
 #define SYSTEM_INIT_DELAY_MS 1000
 
 // Configuración de red
-#define DEFAULT_APN "internet"
-#define SERVER_URL "http://example.com"
-#define SERVER_PORT 8080
+#define DEFAULT_APN "internet.itelcel.com"
+#define SERVER_URL "34.196.135.179"
+#define SERVER_PORT 5200
 
 #endif // SYSTEM_CONFIG_H

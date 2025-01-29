@@ -6,10 +6,13 @@
 #include "freertos/task.h"
 #include "pwManager.h"
 #include "system_config.h"
+#include "tcp.h"
+#include "gpsManager.h"
 
-
-PwManager pwManager;
 SIM7600 simModule(UART_NUM_1);  // Usamos UART1 para la comunicación con el SIM7600
+PwManager pwManager;
+tcp TCP(simModule);
+gpsManager GPS(simModule);
 
 extern "C" void app_main() {
     esp_err_t ret = gpio_install_isr_service(0);
@@ -21,6 +24,12 @@ extern "C" void app_main() {
     pwManager.powerLedGnss();
     pwManager.initInIgn(INPUT_IGN);
     simModule.begin();
+    TCP.activeTcpService();
+    TCP.configTcpServer(SERVER_URL, SERVER_PORT);
+    GPS.activeGps(1);
+    GPS.confiGpsReports(1);
+
+
 
     // Tarea para leer comandos del monitor serial
     char input[256];
