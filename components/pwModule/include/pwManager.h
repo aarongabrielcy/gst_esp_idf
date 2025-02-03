@@ -10,7 +10,7 @@
 class PwManager {
 private:
     unsigned long previousMillis = 0;
-    unsigned long ledInterval = 400; // Intervalo para el parpadeo del LED
+    unsigned long ledInterval = 200; // Intervalo para el parpadeo del LED
     int ledState = 0;                // Estado actual del LED
     int pinIgn;                      // Pin de ignición
 public:

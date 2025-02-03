@@ -85,5 +85,7 @@ $<TARGET_FILE:__idf_usb>
 $<TARGET_FILE:__idf_wifi_provisioning>
 $<TARGET_FILE:__idf_sim7600>
 $<TARGET_FILE:__idf_pwModule>
-$<TARGET_FILE:__idf_main>
+$<TARGET_FILE:__idf_services>
 $<TARGET_FILE:__idf_gps>
+$<TARGET_FILE:__idf_main>
+$<TARGET_FILE:__idf_gprs>
