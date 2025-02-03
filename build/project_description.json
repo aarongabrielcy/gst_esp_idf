@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "gst_esp_idf",
-    "project_version":    "e4be48f-dirty",
+    "project_version":    "4c8d996-dirty",
     "project_path":       "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf",
     "idf_path":           "C:/Users/aaron/esp/v5.4/esp-idf",
     "build_dir":          "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build",
