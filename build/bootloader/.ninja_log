@@ -119,3 +119,14 @@
 17422	17601	7602641549949144	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
 62	217	7602661285411391	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
 62	217	7602661285411391	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+79	297	7602677686103688	esp-idf/esp_bootloader_format/CMakeFiles/__idf_esp_bootloader_format.dir/esp_bootloader_desc.c.obj	5fbbf2653997b1d6
+298	494	7602677688293756	esp-idf/esp_bootloader_format/libesp_bootloader_format.a	42988087035e5ff2
+494	1253	7602677690254083	bootloader.elf	a0a30cc9b2f6ce2c
+1253	2323	7602677708465089	.bin_timestamp	87d5bcb906435f24
+1253	2323	7602677708465089	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/.bin_timestamp	87d5bcb906435f24
+2323	2509	7602677708545051	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+2323	2509	7602677708545051	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+102	388	7602685738419040	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+102	388	7602685738419040	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+113	304	7602707950284884	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190
+113	304	7602707950284884	C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/bootloader/esp-idf/esptool_py/CMakeFiles/bootloader_check_size	2b0815f537d2e190

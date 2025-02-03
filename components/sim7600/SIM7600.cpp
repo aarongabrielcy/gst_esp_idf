@@ -1,6 +1,10 @@
 #include "SIM7600.h"
 
-SIM7600::SIM7600(uart_port_t uart_num) : _uart_num(uart_num) {}
+SIM7600::SIM7600(uart_port_t uart_num) : _uart_num(uart_num) {
+    gps_queue = xQueueCreate(10, sizeof(char) * 256);
+    network_queue = xQueueCreate(10, sizeof(char) * 256);
+    sms_queue = xQueueCreate(10, sizeof(char) * 256);
+}
 
 void SIM7600::begin() {
     // Configurar UART
@@ -78,4 +82,31 @@ int SIM7600::commandType(const std::string& command) {
 }
 std::string SIM7600::processResponse(const std::string& command,  const std::string& fcommand, const std::string& response) {
     return "";
+}
+void SIM7600::readUART() {
+    uint8_t data[256];
+    int len = uart_read_bytes(_uart_num, data, sizeof(data) - 1, pdMS_TO_TICKS(100));
+
+    if (len > 0) {
+        data[len] = '\0';  // Asegurar que es un string válido
+        std::string response((char*)data);
+        
+        // Procesar cada línea recibida
+        size_t start = 0, end = 0;
+        while ((end = response.find("\n", start)) != std::string::npos) {
+            std::string line = response.substr(start, end - start);
+            processLine(line);
+            start = end + 1;
+        }
+    }
+}
+
+void SIM7600::processLine(const std::string& line) {
+    if (line.find("+CGPSINFO:") != std::string::npos) {
+        xQueueSend(gps_queue, line.c_str(), portMAX_DELAY);
+    } else if (line.find("+CPSI:") != std::string::npos) {
+        xQueueSend(network_queue, line.c_str(), portMAX_DELAY);
+    } else if (line.find("+CMTI:") != std::string::npos) {
+        xQueueSend(sms_queue, line.c_str(), portMAX_DELAY);
+    }
 }
