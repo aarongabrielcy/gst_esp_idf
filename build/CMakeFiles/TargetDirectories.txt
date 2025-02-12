@@ -835,6 +835,13 @@ C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/wifi_provisi
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/wifi_provisioning/CMakeFiles/install.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/wifi_provisioning/CMakeFiles/install/local.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/wifi_provisioning/CMakeFiles/install/strip.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/__idf_gprs.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/edit_cache.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/rebuild_cache.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/list_install_components.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install/local.dir
+C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install/strip.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/sim7600/CMakeFiles/__idf_sim7600.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/sim7600/CMakeFiles/edit_cache.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/sim7600/CMakeFiles/rebuild_cache.dir
@@ -870,10 +877,3 @@ C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/main/CMakeFi
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/main/CMakeFiles/install.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/main/CMakeFiles/install/local.dir
 C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/main/CMakeFiles/install/strip.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/__idf_gprs.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/edit_cache.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/rebuild_cache.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/list_install_components.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install/local.dir
-C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/CMakeFiles/install/strip.dir

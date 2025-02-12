@@ -8,11 +8,14 @@
 #include "system_config.h"
 #include "tcp.h"
 #include "gpsManager.h"
+//#include "gprsManager.h"
+#include "antennaInfo.h"
 
 SIM7600 simModule(UART_NUM_1);  // Usamos UART1 para la comunicación con el SIM7600
 PwManager pwManager;
 tcp TCP(simModule);
 gpsManager GPS(simModule);
+//gprsManager GPRS(simModule);
 
 void gps_task(void *pvParameters) {
     char buffer[256];
@@ -23,18 +26,26 @@ void gps_task(void *pvParameters) {
         }
     }
 }
+void cell_task(void *pvParameters) {
+    antennaInfo cell;
+    while (true) {
+        if (xQueueReceive(simModule.cell_queue, &cell, portMAX_DELAY)) {
+            ESP_LOGI("CELL_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
+                cell.systemMode.c_str(), cell.mcc.c_str(), cell.mnc.c_str(),
+                cell.lac.c_str(), cell.cellId.c_str(), cell.rxLevel);
+        }
 
-void network_task(void *pvParameters) {
+    }
+}
+/*void cell_task(void *pvParameters) {
     char buffer[256];
     while (true) {
-        /*vTaskDelay(pdMS_TO_TICKS(2000));  // Cada 2 segundos pedir datos
-        simModule.readUART();  // Leer datos entrantes*/
-        if (xQueueReceive(simModule.network_queue, buffer, portMAX_DELAY)) {
-            printf("Network Data:%s\n", buffer);
+        if (xQueueReceive(simModule.cell_queue, buffer, portMAX_DELAY)) {
+            printf("Cellular Data:%s\n", GPRS.parseCPSI(buffer).c_str() );
             // Procesar datos de red y enviarlos al servidor
         }
     }
-}
+}*/
 void sms_task(void *pvParameters) {
     SMSData sms;
     while (true) {
@@ -43,7 +54,7 @@ void sms_task(void *pvParameters) {
             ESP_LOGI("SMS_TASK", "De: %s", sms.phone_sms.c_str());
             ESP_LOGI("SMS_TASK", "Fecha: %s", sms.datetime_sms.c_str());
             ESP_LOGI("SMS_TASK", "Mensaje: %s", sms.data_sms.c_str());
-        }//BORRAR SMS DESPUES DE PROCESAR EL "MENSAJE", "DESENCADENAR LA ACCION SEGUN EL COMANDO" Y DESPUÉS DE EJECUTAR LA ACCIÓN ELIMNIAR EL SMS CON EL MISMO INDEX
+        }//BORRAR SMS DESPUES DE PROCESAR EL "MENSAJE", "DESENCADENAR LA ACCION SEGUN EL COMANDO" Y DESPUÉS DE EJECUTAR LA ACCIÓN ELIMNIAR EL SMS CON EL MISMO INDEX o puede ser después de leer el msj
     }
 }
 void event_task(void *pvParameters) {
@@ -55,7 +66,7 @@ void event_task(void *pvParameters) {
             char *endPtr;
             int index = strtol(buffer, &endPtr, 10);
  
-            if (*endPtr == '\0' && index > 0) {  // Verifica que es un número válido
+            if (*endPtr == '\0' && index >= 0) {  // Verifica que es un número válido
                 char readCmd[32];
                 snprintf(readCmd, sizeof(readCmd), "AT+CMGR=%d", index);
                 simModule.sendATCommand(readCmd);
@@ -79,10 +90,10 @@ extern "C" void app_main() {
     TCP.activeTcpService();
     TCP.configTcpServer(SERVER_URL, SERVER_PORT);
     GPS.activeGps(1);
-    GPS.confiGpsReports(1);
+    GPS.confiGpsReports(10);
 
     xTaskCreate(gps_task, "gps_task", 4096, NULL, 5, NULL);
-    xTaskCreate(network_task, "network_task", 4096, NULL, 5, NULL);
+    xTaskCreate(cell_task, "cell_task", 4096, NULL, 5, NULL);
     xTaskCreate(sms_task, "sms_task", 4096, NULL, 5, NULL);
     xTaskCreate(event_task, "event_task", 4096, NULL, 5, NULL);
     // Tarea para leer comandos del monitor serial
@@ -96,11 +107,7 @@ extern "C" void app_main() {
         if (fgets(input, sizeof(input), stdin)) {
             // Eliminar el salto de línea '\n' al final de la entrada
             input[strcspn(input, "\n")] = 0;
-            simModule.sendATCommand(input);
-            // Enviar el comando AT al módulo
-            /*std::string response = simModule.sendCommandWithResponse(input, SYSTEM_INIT_DELAY_MS);
-            ESP_LOGI("MAIN", "Respuesta AT: %s", response.c_str());*/
-        }
+            simModule.sendATCommand(input);        }
         simModule.readUART();  // Leer datos entrantes
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_TASK_DELAY_MS)); // Espera para evitar saturar la CPU
     }

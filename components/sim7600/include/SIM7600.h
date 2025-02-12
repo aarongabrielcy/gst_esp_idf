@@ -11,7 +11,8 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include <algorithm>
-
+#include "gprsManager.h"
+#include "antennaInfo.h"
 struct SMSData {
     std::string state_sms;
     std::string phone_sms;
@@ -19,11 +20,20 @@ struct SMSData {
     std::string data_sms;
     std::string state_cmd_at;
 };
+struct GpsData {
+    std::string lat;
+    std::string lon;
+    std::string date_gps;
+    std::string time_gps;
+    std::string speed;
+    std::string course;
+    std::string sat;
+};
 class SIM7600 {
 public:
     SIM7600(uart_port_t uart_num);
     QueueHandle_t gps_queue;
-    QueueHandle_t network_queue;
+    QueueHandle_t cell_queue;
     QueueHandle_t sms_queue;
     QueueHandle_t evt_queue;
     void begin();
@@ -34,21 +44,13 @@ public:
      bool parseSMSCommand(const std::string& sms, std::string& imei, int& paramID, std::string& paramValue);
     std::string generateATCommand(int paramID, const std::string& paramValue);
 
-    struct CellData {
-        std::string sys_mode;
-        std::string oper_mode;
-        std::string mcc;
-        std::string mnc;
-        std::string lac;
-        std::string cellID;
-        std::string rxLev;
-    };
 private:
     uart_port_t _uart_num;
+    gprsManager gprs;
+    bool testUART();
     std::string cleanATResponse(const std::string& response, const std::string& command);
     void processLine(const std::string& line);
     bool parseCMGR(const std::string& response, SMSData& sms);
-    bool parseCPSI(const std::string& response, CellData& cell);
     void processEvent(const std::string& line, const std::string& eventType);
 };
 #endif
