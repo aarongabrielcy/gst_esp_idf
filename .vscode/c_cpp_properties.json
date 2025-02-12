@@ -9,7 +9,9 @@
             "includePath": [
                 "${config:idf.espIdfPath}/components/**",
                 "${config:idf.espIdfPathWin}/components/**",
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/components/gprs/include",
+                "${workspaceFolder}/components/gprs/include"
             ],
             "browse": {
                 "path": [
