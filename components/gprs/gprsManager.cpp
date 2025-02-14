@@ -9,7 +9,7 @@ antennaInfo gprsManager::parseCPSI(const std::string& response) {
       return cell;
   }
 
-  ESP_LOGW("gprsManager", "parseCPSI => %s", response.c_str());
+  ESP_LOGW("gprsManager", "parseCPSI =>%s", response.c_str());
   
   size_t pos = response.find(",");
   if (pos == std::string::npos) {
@@ -38,7 +38,7 @@ antennaInfo gprsManager::parseCPSI(const std::string& response) {
 }
 
 void gprsManager::parseGSM(const std::string& response, antennaInfo& cell) {
-    ESP_LOGI("gprsManager", "Entra a parseGSM");
+    //ESP_LOGI("gprsManager", "Entra a parseGSM");
 
     // Inicializar la estructura con valores predeterminados
     cell = {"GSM", "", "", "", "", "", 0, 0, 0, 0};
@@ -67,7 +67,7 @@ void gprsManager::parseGSM(const std::string& response, antennaInfo& cell) {
 }
 
 void gprsManager::parseWCDMA(const std::string& response, antennaInfo& cell) {
-    ESP_LOGI("gprsManager", "Entra a parseWCDMA");
+    //ESP_LOGI("gprsManager", "Entra a parseWCDMA");
 
     // Inicializar la estructura con valores predeterminados
     cell = {"WCDMA", "", "", "", "", "", 0, 0, 0, 0};
@@ -93,7 +93,7 @@ void gprsManager::parseWCDMA(const std::string& response, antennaInfo& cell) {
 }
 
 void gprsManager::parseLTE(const std::string& response, antennaInfo& cell) {
-    ESP_LOGI("gprsManager", "Entra a parseLTE");
+    //ESP_LOGI("gprsManager", "Entra a parseLTE");
     // Inicializar la estructura
     cell = {"LTE", "", "", "", "", "", 0, 0, 0, 0};
     std::vector<std::string> tokens;
@@ -120,7 +120,7 @@ void gprsManager::parseLTE(const std::string& response, antennaInfo& cell) {
 }
 
 void gprsManager::parseCDMA(const std::string& response, antennaInfo& cell) {
-    ESP_LOGI("gprsManager", "Entra a parseCDMA");
+    //ESP_LOGI("gprsManager", "Entra a parseCDMA");
 
     // Inicializar la estructura con valores predeterminados
     cell = {"CDMA", "", "", "", "", "", 0, 0, 0, 0};
@@ -147,7 +147,7 @@ void gprsManager::parseCDMA(const std::string& response, antennaInfo& cell) {
 }
 
 void gprsManager::parseEVDO(const std::string& response, antennaInfo& cell) {
-    ESP_LOGI("gprsManager", "Entra a parseEVDO");
+    //ESP_LOGI("gprsManager", "Entra a parseEVDO");
 
     // Inicializar la estructura con valores predeterminados
     cell = {"EVDO", "", "", "", "", "", 0, 0, 0, 0};

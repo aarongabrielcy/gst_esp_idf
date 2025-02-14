@@ -10,4 +10,13 @@
 #define SERVER_URL "34.196.135.179"
 #define SERVER_PORT 5200
 
+struct Headers {
+    static constexpr const char *STT = "STT";
+    static constexpr const char *ALT = "ALT";
+    static constexpr const char *ALV = "ALV";
+    static constexpr const char *RES = "RES";
+    static constexpr const char *CMD = "CMD";
+};
+#define DLM ";" //delimiter
+#define CHANGE_COURSE 20
 #endif // SYSTEM_CONFIG_H
