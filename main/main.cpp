@@ -5,36 +5,43 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "pwManager.h"
+#include "initConfig.h"
 #include "system_config.h"
 #include "tcp.h"
-#include "gpsManager.h"
-//#include "gprsManager.h"
 #include "antennaInfo.h"
+#include "gnssInfo.h"
+#include "gprsManager.h"
 
 SIM7600 simModule(UART_NUM_1);  // Usamos UART1 para la comunicación con el SIM7600
 PwManager pwManager;
 tcp TCP(simModule);
-gpsManager GPS(simModule);
-//gprsManager GPRS(simModule);
+initConfig init(simModule);
+gprsManager gprs;
 
+antennaInfo cell;
+gnssInfo gnss;
+
+antennaInfo tempGprs;
+gnssInfo tempGnss;
+
+/// ESTAS TAREAS SOLO COMPRUEBAN QUE LOS DATOS ESTÁN PARSEADOS CORRECTAMENTE BORRAR DESPUÉS
 void gps_task(void *pvParameters) {
-    char buffer[256];
     while (true) {
-        if (xQueueReceive(simModule.gps_queue, buffer, portMAX_DELAY)) {
-            printf("GPS Data:%s\n", buffer);
-            // Aquí puedes parsear y enviar a tu servidor TCP
+        if (xQueueReceive(simModule.gps_queue, &gnss, portMAX_DELAY)) {
+            tempGnss = gnss;
+            /*ESP_LOGI("GNSS_TASK", "Mode: %d, LAT: %f, NS: %c, LON: %f, EW: %c, DATE: %s, TIME: %s, SAT: %d, , FIX: %d",
+                gnss.mode, gnss.lat, gnss.ns, gnss.log, gnss.ew, gnss.date.c_str(), gnss.utc_time.c_str(), gnss.gps_svs, gnss.fix);*/
         }
     }
 }
 void cell_task(void *pvParameters) {
-    antennaInfo cell;
+    //char buffer[256];
     while (true) {
         if (xQueueReceive(simModule.cell_queue, &cell, portMAX_DELAY)) {
-            ESP_LOGI("CELL_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
-                cell.systemMode.c_str(), cell.mcc.c_str(), cell.mnc.c_str(),
-                cell.lac.c_str(), cell.cellId.c_str(), cell.rxLevel);
+            tempGprs = cell;
+           /*ESP_LOGI("CELL_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
+            tempGprs.systemMode.c_str(), tempGprs.mcc.c_str(), tempGprs.mnc.c_str(),tempGprs.lac.c_str(), tempGprs.cellId.c_str(), tempGprs.rxLevel);*/
         }
-
     }
 }
 /*void cell_task(void *pvParameters) {
@@ -46,6 +53,19 @@ void cell_task(void *pvParameters) {
         }
     }
 }*/
+void send_task(void *pvParameters) {
+    while (true) {
+        TickType_t lastWakeTime = xTaskGetTickCount(); // Guardar el tiempo actual
+        /*ESP_LOGI("SEND_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
+            tempGprs.systemMode.c_str(), tempGprs.mcc.c_str(), tempGprs.mnc.c_str(),tempGprs.lac.c_str(), tempGprs.cellId.c_str(), tempGprs.rxLevel);
+        ESP_LOGI("SEND_TASK", "Mode: %d, LAT: %f, NS: %c, LON: %f, EW: %c, DATE: %s, TIME: %s, SAT: %d, , FIX: %d",tempGnss.mode, tempGnss.lat, tempGnss.ns, tempGnss.log, tempGnss.ew, tempGnss.date.c_str(), tempGnss.utc_time.c_str(), tempGnss.gps_svs, tempGnss.fix);*/
+        //<HEAD>,<IMEI>,<MODEL>,<SW_VER><MSG_TYPE>,<DATE><TIME>,<CELL_ID>,<MCC>,<MNC>,<LAC>,<RX_LVL>,<LAT>,<N/S>,<LOG>,<E/W>,<SPD>,<CRS>,<SAT>,<FIX>,<IN_STATE>,<OUT_STATE>,<BCK_VOLT>,<PWR_VOLT>
+        std::string sendData = std::string(Headers::STT)+DLM+sm.imei+DLM+tempGnss.date +DLM+tempGnss.utc_time+DLM+tempGprs.cellId+DLM+tempGprs.mcc+DLM+tempGprs.mnc+DLM+tempGprs.lac+DLM+std::to_string(tempGprs.rxLevel)+DLM+
+        std::to_string(tempGnss.lat)+DLM+std::string(1,tempGnss.ns)+DLM+std::to_string(tempGnss.log)+DLM+std::string(1, tempGnss.ew)+DLM + std::to_string(tempGnss.gps_svs)+DLM+std::to_string(tempGnss.fix);
+        ESP_LOGI("SEND_TASK", "Sending Data: %s", sendData.c_str()); 
+        vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(20000));
+    }
+}
 void sms_task(void *pvParameters) {
     SMSData sms;
     while (true) {
@@ -89,13 +109,15 @@ extern "C" void app_main() {
     simModule.begin();
     TCP.activeTcpService();
     TCP.configTcpServer(SERVER_URL, SERVER_PORT);
-    GPS.activeGps(1);
-    GPS.confiGpsReports(10);
+    init.activeGps(1);
+    init.gpsReport(10);
+    init.gprsReport(5);
 
     xTaskCreate(gps_task, "gps_task", 4096, NULL, 5, NULL);
     xTaskCreate(cell_task, "cell_task", 4096, NULL, 5, NULL);
     xTaskCreate(sms_task, "sms_task", 4096, NULL, 5, NULL);
     xTaskCreate(event_task, "event_task", 4096, NULL, 5, NULL);
+    xTaskCreate(send_task, "send_task", 4096, NULL, 5, NULL);
     // Tarea para leer comandos del monitor serial
     char input[256];
 

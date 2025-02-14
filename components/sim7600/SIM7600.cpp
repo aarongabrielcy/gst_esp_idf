@@ -1,9 +1,11 @@
 #include "SIM7600.h"
 #include <string.h>
+#include "utils/simUtils.h"
+moduleInfo sm;
 
 SIM7600::SIM7600(uart_port_t uart_num) : _uart_num(uart_num) {
-    gps_queue = xQueueCreate(10, sizeof(char) * 256);
-    cell_queue = xQueueCreate(10, sizeof(antennaInfo) );
+    gps_queue = xQueueCreate(10, sizeof(gnssInfo) );
+    cell_queue = xQueueCreate(10, sizeof(antennaInfo));
     sms_queue = xQueueCreate(10, sizeof(char) * 256);
     evt_queue = xQueueCreate(10, sizeof(char) * 256);
 }
@@ -29,11 +31,15 @@ void SIM7600::begin() {
     } else {
         ESP_LOGI("SIM7600", "Comunicación UART con SIM7600 establecida correctamente.");
     }
+    getImei();
+}
+void  SIM7600::getImei() {
+        sendATCommand("AT+SIMEI?");
 }
 bool SIM7600::testUART() {
     while (true) {
         sendATCommand("AT");
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Espera 500ms para la respuesta
+        vTaskDelay(pdMS_TO_TICKS(3000)); // Espera 500ms para la respuesta
 
         std::string response = readUART();
         if (response.find("OK") != std::string::npos) {
@@ -69,7 +75,7 @@ std::string SIM7600::readUART() {
             responseBuffer.erase(0, pos + 1);  // Eliminar la línea procesada
             line.erase(std::remove(line.begin(), line.end(), '\r'), line.end()); // Limpiar '\r'
 
-            ESP_LOGI("SIM7600", "Línea procesada: [%s]", line.c_str());
+            //ESP_LOGI("SIM7600", "Línea procesada: [%s]", line.c_str());
 
             if (line.rfind("AT", 0) == 0) {  // Si la línea comienza con "AT"
                 atResponseBuffer = line + "\n";  // Iniciar el buffer AT
@@ -89,11 +95,11 @@ std::string SIM7600::readUART() {
                 }
             }
             else if (line.find("+CGNSSINFO:") != std::string::npos) {
-                ESP_LOGI("SIM7600", "Evento GPS detectado");
+                //ESP_LOGI("SIM7600", "Evento GPS detectado");
                 processEvent(line, "GPS");
             }
             else if (line.find("+CPSI:") != std::string::npos) {
-                ESP_LOGI("SIM7600", "Evento PIS detectado");
+                //ESP_LOGI("SIM7600", "Evento PIS detectado");
                 processEvent(line, "PSI");
             } 
             else if (line.find("+CMTI:") != std::string::npos) {
@@ -108,27 +114,31 @@ void SIM7600::processEvent(const std::string& line, const std::string& eventType
     char buffer[256];
     
     if (eventType == "GPS" && line.find("+CGNSSINFO:") != std::string::npos) {
-        ESP_LOGI("SIM7600", "Evento GPS detectado");
 
         std::string gpsData = line.substr(line.find("+CGNSSINFO: ") + 11);
-        size_t first_non_space = gpsData.find_first_not_of(" ");
-        if (first_non_space != std::string::npos) {
-            gpsData = gpsData.substr(first_non_space);
+        std::string cleanGpsData = cleanATResponse(line, "AT+CGNSSINFO?");
+        if (!cleanGpsData.empty()) {
+          gnssInfo gnssData = gps.parseGNSS(cleanGpsData);
+          if (!xQueueSend(gps_queue, &gnssData, pdMS_TO_TICKS(100))) {
+            ESP_LOGE("SIM7600", "Error: No se pudo enviar gnss data a la cola");
+          }
+        } else {
+            ESP_LOGI("SIM7600", "Evento PSI CON ERROR %s", cleanGpsData.c_str());
         }
-        strncpy(buffer, gpsData.c_str(), sizeof(buffer) - 1);
-        buffer[sizeof(buffer) - 1] = '\0';
-        
-        xQueueSend(gps_queue, &buffer, portMAX_DELAY);
+
     } else if (eventType == "PSI" && line.find("+CPSI:") != std::string::npos) {
-        std::string cleanData = cleanATResponse(line, "AT+CPSI?");
-        if (!cleanData.empty()) {
-            ESP_LOGI("SIM7600", "PSI LIMPIO:%s", cleanData.c_str());
-            antennaInfo cellData = gprs.parseCPSI(cleanData);
+        std::string cleanGprsData = cleanATResponse(line, "AT+CPSI?");
+        if (!cleanGprsData.empty()) {
+            //ESP_LOGI("SIM7600", "PSI LIMPIO:%s", cleanGprsData.c_str());
+            /*strncpy(buffer, cleanGprsData.c_str(), sizeof(buffer) - 1);
+            buffer[sizeof(buffer) - 1] = '\0';
+            xQueueSend(cell_queue, &buffer, pdMS_TO_TICKS(100));*/
+            antennaInfo cellData = gprs.parseCPSI(cleanGprsData);
             if (!xQueueSend(cell_queue, &cellData, pdMS_TO_TICKS(100))) {
-                ESP_LOGE("SIM7600", "Error: No se pudo enviar la información a la cola");
+                ESP_LOGE("SIM7600", "Error: No se pudo enviar cellular data a la cola");
             }
         } else {
-            ESP_LOGI("SIM7600", "Evento PSI CON ERROR %s", cleanData.c_str());
+            ESP_LOGI("SIM7600", "Evento PSI CON ERROR %s", cleanGprsData.c_str());
         }    
     } else if (eventType == "SMS" && line.find("+CMTI:") != std::string::npos) {
         ESP_LOGI("SIM7600", "Nuevo SMS detectado");
@@ -154,6 +164,9 @@ void SIM7600::processLine(const std::string& line) {
         } else {
             ESP_LOGW("SIM7600", "Fallo al parsear SMS.");
         }
+    } else if(line.find("+SIMEI:") != std::string::npos) {
+        sm.imei = extractIMEI(cleanATResponse(line, "AT+SMEI?") );
+        ESP_LOGW("SIM7600", "IMEI => %s", sm.imei.c_str());
     }
 }
 bool SIM7600::parseSMSCommand(const std::string& sms, std::string& imei, int& paramID, std::string& paramValue) {

@@ -10,7 +10,6 @@
 #include <sstream>
 #include <vector>
 
-
 class gprsManager {
     private:
         //SIM7600& simModule;
