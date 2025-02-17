@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "gprsManager.cpp"
-    INCLUDE_DIRS "include"
+    SRCS "gprsUtils.cpp" "gprsManager.cpp"
+    INCLUDE_DIRS "include" "gprsUtils"
     ## REQUIRES sim7600
 )

@@ -1,5 +1,5 @@
 #include "gprsManager.h"
-
+#include "gprsUtils/gprsUtils.h"
 //gprsManager::gprsManager(SIM7600& sim7600) : simModule(sim7600) {}
 
 antennaInfo gprsManager::parseCPSI(const std::string& response) {
@@ -61,7 +61,7 @@ void gprsManager::parseGSM(const std::string& response, antennaInfo& cell) {
     cell.operationMode = tokens[1];  // Online / Offline
     cell.mcc = tokens[2].substr(0, 3);  // Extraer MCC
     cell.mnc = tokens[2].substr(4, 2);  // Extraer MNC
-    cell.lac = tokens[3];  // LAC (Local Area Code)
+    cell.lac = formatLac(tokens[3]);  // LAC (Local Area Code)
     cell.cellId = tokens[4];  // Cell ID
     cell.rxLevel = std::stoi(tokens[6]);  // RxLev
 }
