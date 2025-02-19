@@ -11,6 +11,10 @@
 #include "antennaInfo.h"
 #include "gnssInfo.h"
 #include "gprsManager.h"
+#include "freertos/semphr.h"
+
+// Declarar semáforos
+//SemaphoreHandle_t startSemaphore;
 
 SIM7600 simModule(UART_NUM_1);  // Usamos UART1 para la comunicación con el SIM7600
 PwManager pwManager;
@@ -23,14 +27,11 @@ gnssInfo gnss;
 
 antennaInfo tempGprs;
 gnssInfo tempGnss;
-
-/// ESTAS TAREAS SOLO COMPRUEBAN QUE LOS DATOS ESTÁN PARSEADOS CORRECTAMENTE BORRAR DESPUÉS
+bool allUART = false;
 void gps_task(void *pvParameters) {
     while (true) {
         if (xQueueReceive(simModule.gps_queue, &gnss, portMAX_DELAY)) {
             tempGnss = gnss;
-            /*ESP_LOGI("GNSS_TASK", "Mode: %d, LAT: %f, NS: %c, LON: %f, EW: %c, DATE: %s, TIME: %s, SAT: %d, , FIX: %d",
-                gnss.mode, gnss.lat, gnss.ns, gnss.log, gnss.ew, gnss.date.c_str(), gnss.utc_time.c_str(), gnss.gps_svs, gnss.fix);*/
         }
     }
 }
@@ -39,30 +40,23 @@ void cell_task(void *pvParameters) {
     while (true) {
         if (xQueueReceive(simModule.cell_queue, &cell, portMAX_DELAY)) {
             tempGprs = cell;
-           /*ESP_LOGI("CELL_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
-            tempGprs.systemMode.c_str(), tempGprs.mcc.c_str(), tempGprs.mnc.c_str(),tempGprs.lac.c_str(), tempGprs.cellId.c_str(), tempGprs.rxLevel);*/
         }
     }
 }
-/*void cell_task(void *pvParameters) {
-    char buffer[256];
-    while (true) {
-        if (xQueueReceive(simModule.cell_queue, buffer, portMAX_DELAY)) {
-            printf("Cellular Data:%s\n", GPRS.parseCPSI(buffer).c_str() );
-            // Procesar datos de red y enviarlos al servidor
-        }
-    }
-}*/
 void send_task(void *pvParameters) {
+    //xSemaphoreTake(startSemaphore, portMAX_DELAY); // Esperar semáforo
     while (true) {
         TickType_t lastWakeTime = xTaskGetTickCount(); // Guardar el tiempo actual
-        /*ESP_LOGI("SEND_TASK", "Mode: %s, MCC: %s, MNC: %s, LAC: %s, Cell ID: %s, Rx Level: %d",
-            tempGprs.systemMode.c_str(), tempGprs.mcc.c_str(), tempGprs.mnc.c_str(),tempGprs.lac.c_str(), tempGprs.cellId.c_str(), tempGprs.rxLevel);
-        ESP_LOGI("SEND_TASK", "Mode: %d, LAT: %f, NS: %c, LON: %f, EW: %c, DATE: %s, TIME: %s, SAT: %d, , FIX: %d",tempGnss.mode, tempGnss.lat, tempGnss.ns, tempGnss.log, tempGnss.ew, tempGnss.date.c_str(), tempGnss.utc_time.c_str(), tempGnss.gps_svs, tempGnss.fix);*/
         //<HEAD>,<IMEI>,<MODEL>,<SW_VER><MSG_TYPE>,<DATE><TIME>,<CELL_ID>,<MCC>,<MNC>,<LAC>,<RX_LVL>,<LAT>,<N/S>,<LOG>,<E/W>,<SPD>,<CRS>,<SAT>,<FIX>,<IN_STATE>,<OUT_STATE>,<BCK_VOLT>,<PWR_VOLT>
-        std::string sendData = std::string(Headers::STT)+DLM+sm.imei+DLM+tempGnss.date +DLM+tempGnss.utc_time+DLM+tempGprs.cellId+DLM+tempGprs.mcc+DLM+tempGprs.mnc+DLM+tempGprs.lac+DLM+std::to_string(tempGprs.rxLevel)+DLM+
-        std::to_string(tempGnss.lat)+DLM+std::string(1,tempGnss.ns)+DLM+std::to_string(tempGnss.log)+DLM+std::string(1, tempGnss.ew)+DLM + std::to_string(tempGnss.gps_svs)+DLM+std::to_string(tempGnss.fix);
-        ESP_LOGI("SEND_TASK", "Sending Data: %s", sendData.c_str()); 
+        /*std::string message = std::string(Headers::STT)+DLM+sm.imei+DLM+tempGnss.date +DLM+tempGnss.utc_time+DLM+tempGprs.cellId+DLM+tempGprs.mcc+DLM+tempGprs.mnc+DLM+tempGprs.lac+DLM+std::to_string(tempGprs.rxLevel)+DLM+
+        std::to_string(tempGnss.lat)+DLM+std::string(1,tempGnss.ns)+DLM+std::to_string(tempGnss.log)+DLM+std::string(1, tempGnss.ew)+DLM + std::to_string(tempGnss.gps_svs)+DLM+std::to_string(tempGnss.fix);*/
+        std::string message = "STT;2049830928;3FFFFF;95;1.0.21;1;20250219;18:42:27;04BB4A02;334;20;3C1F;18;+20.905637;-89.645585;0.19;81.36;17;1;00000000;00000000;1;1;0929;4.1;14.19";
+        ESP_LOGI("SEND_TASK", "Sending Data: %s", message.c_str());
+        if(!TCP.sendData(message)) {
+            ESP_LOGW("SEND_TASK", "Error Sending Data <========================> ");
+            //ARREGLAR LA CONEXION DEL SERVIDOR TCP
+            //TCP.configTcpServer(SERVER_URL, SERVER_PORT);
+        } else {}
         vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(20000));
     }
 }
@@ -89,7 +83,7 @@ void event_task(void *pvParameters) {
             if (*endPtr == '\0' && index >= 0) {  // Verifica que es un número válido
                 char readCmd[32];
                 snprintf(readCmd, sizeof(readCmd), "AT+CMGR=%d", index);
-                simModule.sendATCommand(readCmd);
+                simModule.sendATCommand(readCmd, 100, 0);
                 ESP_LOGI("EVENT_TASK", "Leyendo SMS con comando: %s", readCmd);
             } else {
                  ESP_LOGW("EVENT_TASK", "Índice inválido, ignorado.");
@@ -102,22 +96,31 @@ extern "C" void app_main() {
     if (ret != ESP_OK) {
         ESP_LOGE("GPIO", "Error instalando ISR service: %s", esp_err_to_name(ret));
     }
+    // Inicializar semáforos
+    //startSemaphore = xSemaphoreCreateBinary();    
+
     pwManager.powerModule();
     pwManager.powerKey();
     pwManager.powerLedGnss();
     pwManager.initInIgn(INPUT_IGN);
     simModule.begin();
-    TCP.activeTcpService();
-    TCP.configTcpServer(SERVER_URL, SERVER_PORT);
-    init.activeGps(1);
-    init.gpsReport(10);
-    init.gprsReport(5);
-
+    //AGREGAR UN VALIDADOR O DARLE UN DELAY A LA CONEXION DEL SERVER AGREGAR AL UART UN DELAY DE ALMENOS 1 SEGUNDO
+    if (init.activeGps(1) && TCP.activeTcpService()) {
+        init.gpsReport(0);
+        init.gprsReport(0);
+        if(TCP.configTcpServer(SERVER_URL, SERVER_PORT) ) {
+            allUART = true;
+        }
+    }
+    //xSemaphoreGive(startSemaphore);
+     
     xTaskCreate(gps_task, "gps_task", 4096, NULL, 5, NULL);
     xTaskCreate(cell_task, "cell_task", 4096, NULL, 5, NULL);
     xTaskCreate(sms_task, "sms_task", 4096, NULL, 5, NULL);
     xTaskCreate(event_task, "event_task", 4096, NULL, 5, NULL);
-    xTaskCreate(send_task, "send_task", 4096, NULL, 5, NULL);
+    if(allUART) {
+        xTaskCreate(send_task, "send_task", 4096, NULL, 5, NULL);
+    }
     // Tarea para leer comandos del monitor serial
     char input[256];
 
@@ -129,8 +132,11 @@ extern "C" void app_main() {
         if (fgets(input, sizeof(input), stdin)) {
             // Eliminar el salto de línea '\n' al final de la entrada
             input[strcspn(input, "\n")] = 0;
-            simModule.sendATCommand(input);        }
-        simModule.readUART();  // Leer datos entrantes
+            simModule.sendATCommand(input, 100, 1);        
+        }
+        if(allUART) {
+            simModule.readUART();
+        }
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_TASK_DELAY_MS)); // Espera para evitar saturar la CPU
     }
 }

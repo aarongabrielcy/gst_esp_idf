@@ -8,7 +8,7 @@ class initConfig {
         SIM7600& simModule;
     public:
         initConfig(SIM7600& sim7600);
-        void activeGps(int state);
+        bool activeGps(int state);
         void gpsReport(int interval);
         void gprsReport(int interval);
 };

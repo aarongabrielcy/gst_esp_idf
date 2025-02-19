@@ -34,25 +34,40 @@ void SIM7600::begin() {
     getImei();
 }
 void  SIM7600::getImei() {
-        sendATCommand("AT+SIMEI?");
+     std::string response =  sendATCommand("AT+SIMEI?", 1000, 0);
+     sm.imei = extractIMEI(cleanATResponse(response, "AT+SMEI?") );
 }
 bool SIM7600::testUART() {
-    while (true) {
-        sendATCommand("AT");
-        vTaskDelay(pdMS_TO_TICKS(3000)); // Espera 500ms para la respuesta
+    for (int i = 0; i < 10; i++) {  // Máximo 5 intentos
+        std::string response  = sendATCommand("AT", 3000, 0);
 
-        std::string response = readUART();
         if (response.find("OK") != std::string::npos) {
             ESP_LOGI("SIM7600", "Comunicación UART establecida.");
             return true;
         }
-        ESP_LOGW("SIM7600", "No se recibió respuesta del SIM7600. Reintentando...");
+        ESP_LOGW("SIM7600", "Intento %d: No se recibió respuesta del SIM7600. Reintentando...", i + 1);
     }
+    ESP_LOGE("SIM7600", "No se pudo establecer comunicación UART después de 5 intentos.");
+    return false; 
 }
-void SIM7600::sendATCommand(const std::string& command) {
+void SIM7600::sendTcpCommand(const std::string& command) {
+    std::string atCommand = command + "\r\n";  // Agregar retorno de carro y nueva línea
+    uart_write_bytes(_uart_num, atCommand.c_str(), atCommand.length());
+    ESP_LOGI("SIM7600", "cadena enviada: %s", atCommand.c_str());   
+}
+std::string SIM7600::sendATCommand(const std::string& command, int timeout, int type) {
+    static char respBuffer[512];  // Limita el tamaño máximo de respuesta
+    memset(respBuffer, 0, sizeof(respBuffer));
     std::string atCommand = command + "\r\n";  // Agregar retorno de carro y nueva línea
     uart_write_bytes(_uart_num, atCommand.c_str(), atCommand.length());
     ESP_LOGI("SIM7600", "Comando AT enviado: %s", atCommand.c_str());
+    vTaskDelay(pdMS_TO_TICKS(timeout));
+    
+    int len = uart_read_bytes(_uart_num, (uint8_t*)respBuffer, sizeof(respBuffer) - 1, pdMS_TO_TICKS(200));
+    respBuffer[len] = '\0';  // Asegura terminación en null
+   
+    ESP_LOGI("SIM7600", "Buffer de respuesta antes de retornar: %s", respBuffer);
+    return std::string(respBuffer);
 }
 std::string SIM7600::readUART() {
     static std::string responseBuffer;
@@ -84,7 +99,7 @@ std::string SIM7600::readUART() {
             else if (capturingAT) {
                 atResponseBuffer += line + "\n";
                 
-                if (line == "OK" || line == "ERROR") {
+                if (line == "OK" || line == "ERROR" ) {
                     ESP_LOGI("SIM7600", "Respuesta AT completa: [%s]", atResponseBuffer.c_str());
                     std::string response = atResponseBuffer;
                     processLine(atResponseBuffer);
@@ -92,6 +107,11 @@ std::string SIM7600::readUART() {
                     capturingAT = false; // Resetear estado
                     ESP_LOGI("SIM7600", "STRING => [%s]", response.c_str());
                     return response;
+                }else if(line == ">") {
+                    atResponseBuffer.clear();
+                    capturingAT = false; // Resetear estado
+                    ESP_LOGI("SIM7600", "TCP delimiter => [%s]", line.c_str());
+                    return line;
                 }
             }
             else if (line.find("+CGNSSINFO:") != std::string::npos) {
@@ -99,12 +119,14 @@ std::string SIM7600::readUART() {
                 processEvent(line, "GPS");
             }
             else if (line.find("+CPSI:") != std::string::npos) {
-                //ESP_LOGI("SIM7600", "Evento PIS detectado");
+                //ESP_LOGI("SIM7600", "Evento PSi detectado");
                 processEvent(line, "PSI");
             } 
             else if (line.find("+CMTI:") != std::string::npos) {
                 ESP_LOGI("SIM7600", "Evento SMS detectado");
                 processEvent(line, "SMS");
+            }else if(line.find("+CIPSEND:") != std::string::npos){
+                ESP_LOGI("SIM7600", "RESP TCP detectado %s", line.c_str());
             }
         }
     }
@@ -164,10 +186,10 @@ void SIM7600::processLine(const std::string& line) {
         } else {
             ESP_LOGW("SIM7600", "Fallo al parsear SMS.");
         }
-    } else if(line.find("+SIMEI:") != std::string::npos) {
+    }/*else if(line.find("+SIMEI:") != std::string::npos) {
         sm.imei = extractIMEI(cleanATResponse(line, "AT+SMEI?") );
         ESP_LOGW("SIM7600", "IMEI => %s", sm.imei.c_str());
-    }
+    }*/
 }
 bool SIM7600::parseSMSCommand(const std::string& sms, std::string& imei, int& paramID, std::string& paramValue) {
     char cmd[4], imeiBuffer[16], paramBuffer[32];
@@ -255,3 +277,4 @@ bool SIM7600::parseCMGR(const std::string& response, SMSData& sms) {
     ESP_LOGW("SIM7600", "Error al parsear respuesta de AT+CMGR: %s", cleanResponse.c_str());
     return false;
 }
+//////////////// CREAR UNA FUNCION GENERICA PARA VALIDAR 

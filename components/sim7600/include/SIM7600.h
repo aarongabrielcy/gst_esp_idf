@@ -32,20 +32,21 @@ public:
     QueueHandle_t sms_queue;
     QueueHandle_t evt_queue;
     void begin();
-    void sendATCommand(const std::string& command);
+    std::string sendATCommand(const std::string& command, int timeout, int type);
     /*std::string readResponse();
     std::string sendCommandWithResponse(const std::string& command, int timeout);*/
     std::string readUART();
      bool parseSMSCommand(const std::string& sms, std::string& imei, int& paramID, std::string& paramValue);
     std::string generateATCommand(int paramID, const std::string& paramValue);
     void getImei();
+    std::string cleanATResponse(const std::string& response, const std::string& command);
+    void sendTcpCommand(const std::string& command);
 
 private:
     uart_port_t _uart_num;
     gprsManager gprs;
     gpsManager gps;
     bool testUART();
-    std::string cleanATResponse(const std::string& response, const std::string& command);
     void processLine(const std::string& line);
     bool parseCMGR(const std::string& response, SMSData& sms);
     void processEvent(const std::string& line, const std::string& eventType);

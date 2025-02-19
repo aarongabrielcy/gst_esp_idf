@@ -2,10 +2,11 @@
 #define TCP_H
 
 #include "SIM7600.h"
-#include <string> 
+/*#include <string> 
 #include "esp_log.h"
 #include "system_config.h"
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"*/
 class tcp {
 
 private:
@@ -13,8 +14,10 @@ private:
    
 public:
     tcp(SIM7600& sim7600);
-    void activeTcpService();
-    void configTcpServer(const std::string& server, int port);
+    bool activeTcpService();
+    bool validConfigTCP();
+    bool configTcpServer(const std::string& server, int port);
+    bool sendData(std::string& message);
 };
 
 #endif

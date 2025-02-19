@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "gst_esp_idf",
-    "project_version":    "9ff3850-dirty",
+    "project_version":    "2d4f2c5-dirty",
     "project_path":       "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf",
     "idf_path":           "C:/Users/aaron/esp/v5.4/esp-idf",
     "build_dir":          "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build",
@@ -1090,8 +1090,8 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/build/esp-idf/gprs/libgprs.a",
-            "sources": [ "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/gprs/gprsManager.cpp" ],
-            "include_dirs": [ "include" ]
+            "sources": [ "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/gprs/gprsUtils.cpp", "C:/Users/aaron/Documents/esp-idf-projects/gst_esp_idf/components/gprs/gprsManager.cpp" ],
+            "include_dirs": [ "include", "gprsUtils" ]
         },
         "gps": {
             "alias": "idf::gps",
@@ -2974,7 +2974,7 @@
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
-            "include_dirs": [ "include" ]
+            "include_dirs": [ "include", "gprsUtils" ]
         },
         "gps": {
             "alias": "idf::gps",

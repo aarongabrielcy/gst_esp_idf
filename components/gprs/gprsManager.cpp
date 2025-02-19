@@ -87,7 +87,7 @@ void gprsManager::parseWCDMA(const std::string& response, antennaInfo& cell) {
     cell.operationMode = tokens[1];  // Online / Offline
     cell.mcc = tokens[2].substr(0, 3);  // Extraer MCC
     cell.mnc = tokens[2].substr(4, 2);  // Extraer MNC
-    cell.lac = tokens[3];  // LAC (Local Area Code)
+    cell.lac = formatLac(tokens[3]);  // LAC (Local Area Code)
     cell.cellId = tokens[4];  // Cell ID
     cell.rxLevel = std::stoi(tokens[12]);  // RxLev
 }
@@ -111,7 +111,7 @@ void gprsManager::parseLTE(const std::string& response, antennaInfo& cell) {
     cell.operationMode = tokens[1];  // Online / Offline
     cell.mcc = tokens[2].substr(0, 3);  // Extraer MCC
     cell.mnc = tokens[2].substr(4, 3);  // Extraer MNC
-    cell.lac = tokens[3];  // Tracking Area Code (TAC)
+    cell.lac = formatLac(tokens[3]);  // Tracking Area Code (TAC)
     cell.cellId = tokens[4];  // Cell ID
     cell.rsrq = std::stoi(tokens[10]);  // RSRQ
     cell.rxLevel = std::stoi(tokens[11]);  // RSRP
