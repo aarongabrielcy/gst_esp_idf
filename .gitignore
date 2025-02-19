@@ -1,0 +1,21 @@
+# Archivos de compilación
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.elf
+*.map
+*.log
+*.pyc
+*.bak
+*.swp
+
+# Archivos de dependencias
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Archivos de ESP-IDF
+flash_cmd.py
+partition_table/

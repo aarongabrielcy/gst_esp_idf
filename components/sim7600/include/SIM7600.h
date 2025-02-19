@@ -39,6 +39,7 @@ public:
      bool parseSMSCommand(const std::string& sms, std::string& imei, int& paramID, std::string& paramValue);
     std::string generateATCommand(int paramID, const std::string& paramValue);
     void getImei();
+    void sendTcpMessage(const std::string& command);
 
 private:
     uart_port_t _uart_num;

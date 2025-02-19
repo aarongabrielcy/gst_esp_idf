@@ -129,7 +129,8 @@ extern "C" void app_main() {
         if (fgets(input, sizeof(input), stdin)) {
             // Eliminar el salto de línea '\n' al final de la entrada
             input[strcspn(input, "\n")] = 0;
-            simModule.sendATCommand(input);        }
+            simModule.sendATCommand(input);        
+        }
         simModule.readUART();  // Leer datos entrantes
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_TASK_DELAY_MS)); // Espera para evitar saturar la CPU
     }

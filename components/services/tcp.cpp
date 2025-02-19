@@ -11,3 +11,7 @@ void tcp::activeTcpService() {
 void tcp::configTcpServer(const std::string& server, int port) {
     simModule.sendATCommand("AT+CIPOPEN=0,\"TCP\",\"" + server + "\"," + std::to_string(port));
 }
+
+bool tcp::sendMessage(const std::string& message) {
+ return false;   
+}

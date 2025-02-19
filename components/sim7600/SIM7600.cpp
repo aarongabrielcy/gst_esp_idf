@@ -49,6 +49,9 @@ bool SIM7600::testUART() {
         ESP_LOGW("SIM7600", "No se recibió respuesta del SIM7600. Reintentando...");
     }
 }
+void SIM7600::sendTcpMessage(const std::string& command) {
+    
+}
 void SIM7600::sendATCommand(const std::string& command) {
     std::string atCommand = command + "\r\n";  // Agregar retorno de carro y nueva línea
     uart_write_bytes(_uart_num, atCommand.c_str(), atCommand.length());

@@ -15,6 +15,7 @@ public:
     tcp(SIM7600& sim7600);
     void activeTcpService();
     void configTcpServer(const std::string& server, int port);
+    bool sendMessage(const std:: string& message);
 };
 
 #endif
